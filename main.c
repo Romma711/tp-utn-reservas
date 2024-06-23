@@ -6,6 +6,9 @@
 #define HABITACIONES = "habitaciones.bin"
 #define RESERVAS = "reservas.bin"
 
+const int fil = 3;
+const int col = 3;
+
 typedef struct{
     char nombre[20];
     char apellido[20];
@@ -27,22 +30,35 @@ typedef struct{
     int checkIn[2]; ///[0] es para el dia y [1] es para el mes de entrada
     int checkOut[2]; ///[0] es para el dia y [1] es para el mes de salida
 }Reservas;
-
-///REGION Mostrar contenido del archivo
-                                                                                                                           //P1: [4] [5] [6]
-//TO DO mostrar archivos y sus respectivos contenions de manera recursiva (MOSTRAR LAS HABITACIONES COMO UNA MATRIZ, ejemplo pb: [1] [2] [3])
+//TO DO mostrar archivos y sus respectivos contenions de manera recursiva
 
 //TO DO crear una funciones que modifique los registros implementando un arreglo dinamico(en lo posible cargarlo con una funcion void con doble puntero)
 
 //TO DO crear funciones que eliminen los registros de los archivos con un arreglo estatico
 
-//TO DO
+///
 
-void mostrarArchivoClientes(){
-
+int cantRegistrosCliente(){
+    FILE *archi = fopen(CLIENTES,"rb");
+    int resultado;
+    if(archi != NULL){
+        fseek(archi,0,SEEK_END);
+        resultado = ftell(archi)/sizeof(Cliente);
+    }
+    return resultado;
 }
 
-///ENDREGION Mostrar contenido del archivo
+int cantRegistrosReserva(){
+    FILE *archi = fopen(RESERVAS,"rb");
+    int resultado;
+    if(archi != NULL){
+        fseek(archi,0,SEEK_END);
+        resultado = ftell(archi)/sizeof(Reservas);
+    }
+    return resultado;
+}
+
+///
 
 ///REGION Cargar registros
 
@@ -114,12 +130,38 @@ void crearArchivoReservas(Reservas aux){
 
 //TO DO crear validaciones para las diferentes funciones, revisando el dato a cargar y los diferentes registros cargados coincidan
 
+int validarFechas(Reservas aValidar,FILE *archi){
+    Reservas aux;
+    int flag=0;
+    while(!feof(archi)){
+        fread(&aux,sizeof(Cliente),1,archi);
+        if(aValidar.habitacionReservada.numero==aux.habitacionReservada.numero){
+            if(aValidar.checkIn[0]<=aux.checkOut[0] && aValidar.checkOut<aux.checkOut && aValidar.checkIn[1]==aux.checkIn[1]){
+                flag=1;
+            }
+        }
+    }
+    return flag;
+}
+
 void cargarArchivoClientes (){
-    Cliente aux;
+    Cliente aux,aux2;
     cargarCliente(&aux);
-    FILE *archi = fopen(CLIENTES, "ab");
+    FILE *archi = fopen(CLIENTES, "r+b");
     if(archi != NULL){
-        fwrite(&aux,sizeof(Cliente),1,archi);
+        int flag=0;
+        fseek(archi,0,SEEK_SET);
+        while(!feof(archi)){
+            fread(&aux2,sizeof(Cliente),1,archi)
+            if(strcmpi(aux.nombre,aux2.nombre) && strcmpi(aux.apellido,aux2.apellido) && aux.dni==aux2.dni){
+                flag=1;
+            }
+        }
+        if(flag==0){
+            fwrite(&aux,sizeof(Cliente),1,archi);
+        }else{
+            printf("\nEste cliente ya esta cargado");
+        }
     }else{
         fclose(archi);
         crearArchivoCliente(aux);
@@ -143,9 +185,12 @@ void cargarArchivoHabitaciones (){
 void cargarArchivoReservas (){
     Reservas aux;
     cargarReservas(&aux);
-    FILE *archi = fopen(RESERVAS, "ab");
+    FILE *archi = fopen(RESERVAS, "r+b");
+    int flag = validarFechas(aux,&archi);
     if(archi != NULL){
-        fwrite(&aux,sizeof(Reservas),1,archi);
+        if(flag==0){
+            fwrite(&aux,sizeof(Reservas),1,archi);
+        }
     }else{
         fclose(archi);
         crearArchivoReservas(aux);
@@ -155,7 +200,89 @@ void cargarArchivoReservas (){
 
 ///ENDREGION Cargar archivos
 
+///REGION mostrar contenido del archivo
 
+void mostrarCliente(Cliente aux){
+    printf("\nNombre: %s\n",aux.nombre);
+    printf("\nApellido: %s\n",aux.apellido);
+    printf("\nEdad: %i\n",aux.edad);
+    printf("\nDNI: %i\n",aux.dni);
+}
+
+void mostrarHabitacion(Habitaciones aux){
+    printf("\nNumero de Habitacion: %i\n",aux.numero);
+    printf("\nCantidad de ambientes: %s\n",aux.numero);
+    printf("\nCoste por noche: %i\n",aux.costeNoche);
+}
+
+void mostrarReserva(Reservas aux){
+    printf("\nLa habitacion reservada es: \n\n");
+    mostrarHabitacion(aux.habitacionReservada);
+    printf("\nEsta reservada por: \n\n");
+    mostrarCliente(aux.reservadoPor);
+    printf("\nUn total de %i dias\n",aux.cantDias);
+    printf("\nEntran el dia %i del %i\n",aux.checkIn[0], aux.checkIn[1]);
+    printf("\nSalen el dia %i del %i\n",aux.checkOut[0], aux.checkOut[1]);
+    printf("\nEl coste total de la reserva es de: %i\n",aux.costeTotal);
+}
+
+void mostrarRecursivoCliente(FILE *archi, int i){
+    Cliente aux;
+    if(!feof(archi)){
+        fread(&aux,sizeof(Cliente),1,archi);
+        printf("\n %i.\n",i+1);
+        mostrarCliente(aux);
+        mostrarRecursivoCliente(&archi,i+1);
+    }
+}
+
+void mostrarRecursivoReserva(FILE *archi, int i){
+    Cliente aux;
+    if(!feof(archi)){
+        fread(&aux,sizeof(Reservas),1,archi);
+        printf("\n %i.\n",i+1);
+        mostrarReserva(aux);
+        mostrarRecursivoReserva(&archi,i+1);
+    }
+}
+
+//Funcion que muestre las habitaciones como una matriz
+
+//Funcion que recorra el archivo de reservas y almacene los registros del archivo en un arreglo dinamico
+
+void abrirArchivoCliente(){
+    int i = 0;
+    FILE *archi = fopen(CLIENTES,"rb");
+    if(archi != NULL){
+        mostrarRecursivoCliente(&archi,i);
+    }
+    fclose(archi);
+}
+void abrirArchivoHabitacion(){
+    FILE *archi = fopen(CLIENTES,"rb");
+    if(archi != NULL){
+        Habitaciones aux[fil][col];
+        for(int i=0;i<fil;i++){
+            for(int j=0;j<col;j++){
+                fread(aux[i][j],sizeof(Habitaciones),1,archi);
+            }
+        }
+        for(int i=0;i<fil;i++){
+            for(int j=0;j<col;j++){
+                mostrarHabitacion(aux[i][j])
+            }
+        }
+    }
+    fclose(archi);
+}
+void abrirArchivoReservas(){
+    FILE *archi = fopen(CLIENTES,"rb");
+    if(archi != NULL){
+
+    }
+    fclose(archi);
+}
+///ENDREGION Mostrar contenido del archivo
 
 ///REGION MENU
 
