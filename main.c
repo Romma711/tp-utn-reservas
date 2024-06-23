@@ -81,6 +81,82 @@ int cantRegistrosEmpleado(){
 
 ///ENDREGION Cuenta de registros
 
+///REGION Posicion en el archivo
+
+int clientePosicion(FILE *archi){
+    Cliente arr[50];
+    int i = 0;
+    int control;
+    while(!feof(archi)){
+        fread(arr[i],sizeof(Cliente),1,archi);
+        i++;
+    }
+    for(int j=0; j<i;j++){
+        printf("\n%i.",j);
+        mostrarCliente(arr[i]);
+    }
+    printf("\nElegi al cliente:\n");
+    fflush(stdin);
+    scanf("%i",&control);
+    control - 1;
+    return control;
+}
+
+int habitacionPosicion(FILE *archi){
+    Habitaciones matriz[fil[col];
+    int i = 0;
+    int control;
+    for(int j=0;j<fil;j++){
+        for(int k=0;k<col;k++){
+        fread(arr[i],sizeof(Cliente),1,archi);
+        }
+    }
+    for(int j=0; j<fil;j++){
+        for(int k=0;k<col;k++){
+            mostrarHabitacion(matriz[j][k]);
+        }
+        printf("\n");
+    }
+    printf("\nElegi el numero de la habitacion:\n");
+    fflush(stdin);
+    scanf("%i",&control);
+    control;
+    return control;
+}
+
+void clienteReservar(Cliente *aCargar){
+    int posicion;
+    FILE *archi= fopen (CLIENTES,"rb");
+    if(archi != NULL){
+        posicion = clientePosicion(&archi);
+        fseek(archi,0,SEEK_SET);
+        fseek(archi,sizeof(Cliente)*posicion,SEEK_CUR);
+        fread(aCargar,sizeof(Cliente),1,archi);
+    }
+    fclose(archi);
+}
+
+void habitacionReservar(Habitaciones *aCargar){
+    int numero;
+    Habitaciones aux;
+    FILE *archi= fopen (HABITACIONES,"rb");
+    if(archi != NULL){
+        numero = habitacionPosicion(&archi);
+        fseek(archi,0,SEEK_SET);
+        while(!feof(archi)){
+            fread(&aux,sizeof(Habitaciones),1,archi);
+            if(aux.numero == numero){
+                aCargar->numero = aux.numero;
+                aCargar->ambientes = aux.ambientes,
+                aCargar->costeNoche = aux.costeNoche;
+            }
+        }
+    }
+    fclose(archi);
+}
+
+///ENDREGION Posicion en el archivo
+
 ///REGION Cargar registros
 
 void cargarCliente(Cliente *aux){
@@ -112,7 +188,25 @@ void cargarHabitacion(Habitaciones *aux){
 
 /// Eze: HELL NAW
 void cargarReserva(Reservas *aux){
-
+    clienteReservar(&aux.reservadoPor);
+    habitacionReservar(&aux.habitacionReservada);
+    printf("\nDe cuantos dias es la reserva?: \n")
+    fflush(stdin);
+    scanf("%i",aux->cantDias);
+    printf("\nDia de entrada: \n")
+    fflush(stdin);
+    scanf("%i",aux->checkIn[0]);
+    printf("\nMes de entrada: \n")
+    fflush(stdin);
+    scanf("%i",aux->checkIn[1]);
+    printf("\nDia de salida: \n")
+    fflush(stdin);
+    scanf("%i",aux->checkOut[0]);
+    printf("\nMes de salida: \n")
+    fflush(stdin);
+    scanf("%i",aux->checkOut[1]);
+    aux->costeTotal= aux.cantDias * aux.habitacionReservada.costeNoche;
+    printf("\nEl coste total seria de: %i \n",aux.costeTotal);
 }
 
 void cargarEmpleado(Empleado *aux){
