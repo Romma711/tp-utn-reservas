@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1719170028 source:c:\users\eze\desktop\abc\tp-utn-reservas\pila.c
+	"pila.h"
+
+1719170028 c:\users\eze\desktop\abc\tp-utn-reservas\pila.h
+	<stdio.h>
+	<malloc.h>
+
