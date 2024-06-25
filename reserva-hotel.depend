@@ -19,3 +19,16 @@
 	<string.h>
 	"pila.h"
 
+1719353772 source:c:\users\eze\desktop\tp progra\tp-utn-reservas\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"pila.h"
+
+1719341435 c:\users\eze\desktop\tp progra\tp-utn-reservas\pila.h
+	<stdio.h>
+	<malloc.h>
+
+1719341435 source:c:\users\eze\desktop\tp progra\tp-utn-reservas\pila.c
+	"pila.h"
+
