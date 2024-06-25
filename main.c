@@ -32,18 +32,7 @@ typedef struct{
     int checkOut[2]; ///[0] es para el dia y [1] es para el mes de salida
 }Reservas;
 
-typedef struct{
-    char nombre[20];
-    char apellido[20];
-    char puesto[30]; ///Recepcionista, conserje, etc.
-    int edad;
-    int dni;
-    int salario;
-}Empleado; ///Esta struct nos puede ser de utilidad más adelante
-
-//TO DO mostrar archivos y sus respectivos contenions de manera recursiva
-
-//TO DO crear una funciones que modifique los registros implementando un arreglo dinamico(en lo posible cargarlo con una funcion void con doble puntero)
+//TO DO crear una funcion que modifique los registros implementando un arreglo dinamico(en lo posible cargarlo con una funcion void con doble puntero)
 
 //TO DO crear funciones que eliminen los registros de los archivos con un arreglo estatico
 
@@ -79,7 +68,9 @@ int cantRegistrosEmpleado(){
     return resultado;
 }
 
-///ENDREGION Cuenta de registros
+///REGION Modificacion y eliminacion de registros
+
+///ENDREGION
 
 void modificarCliente(Cliente *aux){
     int selector;
@@ -232,10 +223,12 @@ void clientePosicion(){
 
 int habitacionPosicion(FILE *archi){
     Habitaciones matriz[fil][col];
+    Habitaciones matriz[fil][col];
     int i = 0;
     int control;
     for(int j=0;j<fil;j++){
         for(int k=0;k<col;k++){
+            fread(&matriz[i],sizeof(Cliente),1,archi);
         fread(&matriz[i],sizeof(Cliente),1,archi);
         }
     }
@@ -275,7 +268,7 @@ void habitacionReservar(Habitaciones *aCargar){
             fread(&aux,sizeof(Habitaciones),1,archi);
             if(aux.numero == numero){
                 aCargar->numero = aux.numero;
-                aCargar->ambientes = aux.ambientes,
+                aCargar->ambientes = aux.ambientes;
                 aCargar->costeNoche = aux.costeNoche;
             }
         }
@@ -290,15 +283,17 @@ void habitacionReservar(Habitaciones *aCargar){
 void cargarCliente(Cliente *aux){
     printf("Ingrese el nombre del cliente:\n");
     fflush(stdin);
-    scanf("%s",aux->nombre);
+    scanf("%s",&aux->nombre);
     printf("\nIngrese el apellido del cliente:\n");
     fflush(stdin);
-    scanf("%s",aux->apellido);
+    scanf("%s",&aux->apellido);
     printf("\nIngrese la edad del cliente:\n");
     fflush(stdin);
     scanf("%i",&aux->edad);
+    scanf("%i",&aux->edad);
     printf("\nIngrese el DNI del cliente:\n");
     fflush(stdin);
+    scanf("%i",&aux->dni);
     scanf("%i",&aux->dni);
 }
 
@@ -306,32 +301,48 @@ void cargarHabitacion(Habitaciones *aux){
     printf("Ingrese el numero de la habitacion:\n");
     fflush(stdin);
     scanf("%s",&aux->numero);
+    scanf("%s",&aux->numero);
     printf("\nIngrese la cantidad de ambientes que tiene la habitacion:\n");
     fflush(stdin);
+    scanf("%s",&aux->ambientes);
     scanf("%s",&aux->ambientes);
     printf("\nIngrese el coste por noche de la habitacion:\n");
     fflush(stdin);
     scanf("%i",&aux->costeNoche);
+    scanf("%i",&aux->costeNoche);
 }
 
-/// Eze: HELL NAW
 void cargarReserva(Reservas *aux){
+    clienteReservar(&aux->reservadoPor);
+    habitacionReservar(&aux->habitacionReservada);
+    printf("\nDe cuantos dias es la reserva?: \n");
     clienteReservar(&aux->reservadoPor);
     habitacionReservar(&aux->habitacionReservada);
     printf("\nDe cuantos dias es la reserva?: \n");
     fflush(stdin);
     scanf("%i",&aux->cantDias);
     printf("\nDia de entrada: \n");
+    scanf("%i",&aux->cantDias);
+    printf("\nDia de entrada: \n");
     fflush(stdin);
+    scanf("%i",&aux->checkIn[0]);
+    printf("\nMes de entrada: \n");
     scanf("%i",aux->checkIn[0]);
     printf("\nMes de entrada: \n");
     fflush(stdin);
+    scanf("%i",&aux->checkIn[1]);
+    printf("\nDia de salida: \n");
     scanf("%i",aux->checkIn[1]);
     printf("\nDia de salida: \n");
     fflush(stdin);
+    scanf("%i",&aux->checkOut[0]);
+    printf("\nMes de salida: \n");
     scanf("%i",aux->checkOut[0]);
     printf("\nMes de salida: \n");
     fflush(stdin);
+    scanf("%i",&aux->checkOut[1]);
+    aux->costeTotal = aux->cantDias * aux->habitacionReservada.costeNoche;
+    printf("\nEl coste total seria de: %i \n",aux->costeTotal);
     scanf("%i",aux->checkOut[1]);
     aux->costeTotal= aux->cantDias * aux->habitacionReservada.costeNoche;
     printf("\nEl coste total seria de: %i \n",aux->costeTotal);
@@ -385,15 +396,6 @@ void crearArchivoReservas(Reservas aux){
     FILE *archi = fopen(RESERVAS,"wb");
     if(archi == NULL){
         fwrite(&aux,sizeof(Reservas),1,archi);
-        printf("Se creo el archivo y se almaceno el registro ingresado");
-    }
-    fclose(archi);
-}
-
-void crearArchivoEmpleado(Empleado aux){
-    FILE *archi = fopen(EMPLEADOS,"wb");
-    if(archi == NULL){
-        fwrite(&aux,sizeof(Empleado),1,archi);
         printf("Se creo el archivo y se almaceno el registro ingresado");
     }
     fclose(archi);
@@ -455,34 +457,9 @@ void cargarArchivoReservas(){
     fclose(archi);
 }
 
-void cargarArchivoEmpleado(){
-    Empleado aux,aux2;
-    cargarEmpleado(&aux);
-    FILE *archi = fopen(EMPLEADOS, "r+b");
-    if(archi != NULL){
-        int flag=0;
-        fseek(archi,0,SEEK_SET);
-        while(!feof(archi)){
-            fread(&aux2,sizeof(Empleado),1,archi);
-            if(strcmpi(aux.nombre,aux2.nombre) == 0 && strcmpi(aux.apellido,aux2.apellido) == 0 && aux.dni==aux2.dni){
-                flag=1;
-            }
-        }
-        if(flag==0){
-            fwrite(&aux,sizeof(Empleado),1,archi);
-        }else{
-            printf("\nEste empleado ya esta cargado");
-        }
-    }else{
-        fclose(archi);
-        crearArchivoEmpleado(aux);
-    }
-    fclose(archi);
-}
-
 ///ENDREGION Cargar archivos
 
-///REGION mostrar contenido del archivo
+///REGION Mostrar contenido del archivo
 
 void mostrarCliente(Cliente aux){
     printf("\n-------------------------");
@@ -514,17 +491,6 @@ void mostrarReserva(Reservas aux){
     printf("---------------------------------");
 }
 
-void mostrarEmpleado(Empleado aux){
-    printf("\n--------------------------------");
-    printf("\nNombre: %s\n", aux.nombre);
-    printf("\nApellido: %s\n", aux.apellido);
-    printf("\nPuesto: %s\n", aux.puesto);
-    printf("\nEdad: %i\n", aux.edad);
-    printf("\nDNI: %i\n", aux.dni);
-    printf("\nSalario: %i\n", aux.salario);
-    printf("--------------------------------");
-}
-
 void mostrarRecursivoCliente(Cliente arr[], int i, int val){
     if(i<val){
         printf("\n\n[%i].",i+1);
@@ -540,16 +506,62 @@ void mostrarRecursivoReserva(Reservas arr[], int i, int val){
     }
 }
 
-void mostrarRecursivoEmpleado(FILE *archi, int i){
-    Empleado aux;
+void mostrarRecursivoHabitacion(FILE *archi, int i){
+    Habitaciones aux;
     if(!feof(archi)){
-        fread(&aux,sizeof(Empleado),1,archi);
-        printf("\nEmpleado %i:\n",i+1);
-        mostrarEmpleado(aux);
-        mostrarRecursivoEmpleado(&archi,i+1);
+        fread(&aux,sizeof(Habitaciones),1,archi);
+        printf("\Habitacion %i:\n",i+1);
+        mostrarHabitacion(aux);
+        mostrarRecursivoHabitacion(&archi,i+1);
     }
 }
 
+void mostrarMatrizHabitaciones(){
+
+    Habitaciones aux;
+    int matriz[fil][col];
+    FILE* archi = fopen(HABITACIONES, "rb");
+
+    if(archi != NULL){
+        for(int i = 0; i < fil; i++){
+            for(int j = 0; j < col; j++){
+                fread(&aux, sizeof(Habitaciones), 1, archi);
+                if(!feof(archi)){
+                    matriz[i][j] = aux.numero;
+                }
+            }
+        }
+        fclose(archi);
+    }
+
+    for(int i = 0; i < fil; i++){
+        printf("\nPlanta %i:\n", i);
+        for(int j = 0; j < col; j++){
+            printf("| %i |", matriz[i][j]);
+        }
+    }
+
+}
+
+void copiarReservasEnArreglo(int cant, Reservas **arr){
+
+    Reservas aux;
+    *arr = (int*) calloc(cant, sizeof(Reservas));
+    int i = 0;
+    FILE* archi = fopen(RESERVAS, "rb");
+
+    if(archi != NULL){
+        while(!feof(archi) && i < cant){
+            fread(&aux, sizeof(Reservas), 1, archi);
+            if(!feof(archi)){
+                (*arr)[i] = aux;
+                i++;
+            }
+        }
+        fclose(archi);
+    }
+
+}
 
 void abrirArchivoCliente(){
     system("cls");
@@ -570,31 +582,26 @@ void abrirArchivoCliente(){
 }
 
 void abrirArchivoHabitacion(){
+    int i = 0;
+    Habitaciones aux;
     system("cls");
     FILE *archi = fopen(HABITACIONES,"rb");
     if(archi != NULL){
-        Habitaciones aux[fil][col];
-        for(int i=0;i<fil;i++){
-            for(int j=0;j<col;j++){
-                fread(&aux[i][j],sizeof(Habitaciones),1,archi);
-            }
-        }
-        for(int i=0;i<fil;i++){
-            for(int j=0;j<col;j++){
-                mostrarHabitacion(aux[i][j]);
-            }
-        }
+        mostrarMatrizHabitaciones();
+        mostrarRecursivoHabitacion(&archi, i);
     }
     fclose(archi);
 }
 
 void abrirArchivoReservas(){
+    int i = 0;
     system("cls");
     int i = 0;
     int val =0;
     Reservas aux[50];
     FILE *archi = fopen(RESERVAS,"rb");
     if(archi != NULL){
+        mostrarRecursivoReserva(archi, i);
         while(!feof(archi)){
             if(!feof(archi)){
                 fread(&aux[val],sizeof(Reservas),1,archi);
