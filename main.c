@@ -37,6 +37,14 @@ typedef struct{
 
 ///TO DO Una funcion que verifique la carga de las fechas de los check ins y check outs (verificar que ninguna fecha se superponga a otra en la misma habitacion)
 
+///TO DO Una funcion que modifique la reserva (que puedea modificar la habitacion, el coste total del hospedaje, entrada y salida) TOMAR DE REFERENCIA MODIFICAR CLIENTE
+
+///TO DO Una funcion que elimine la reserva TOMAR DE REFERENCIA BORRAR CLIENTE
+
+///TO DO Hacer la funcionalidad completa del menu
+
+///TO DO Hacer la funcionalidad completa de las habitaciones (cargar habitaciones, si o si 9 habitaciones, mostrar habitaciones, modificar precio por noche de la habitacion, NO ELIMINAR HABITACIONES)
+
 ///REGION Cuenta de registros
 
 int cantRegistrosCliente(){
@@ -60,8 +68,6 @@ int cantRegistrosReserva(){
 }
 
 ///REGION Modificacion y eliminacion de registros
-
-///ENDREGION
 
 void modificarCliente(Cliente *aux){
     int selector;
@@ -174,9 +180,7 @@ void modificarReserva(Reservas *aux){
     }
 }
 
-///REGION Modificacion y eliminacion de registros
-
-///ENDREGION
+///ENDREGION Modificacion y eliminacion de registros
 
 ///REGION Posicion en el archivo
 
@@ -277,6 +281,7 @@ void habitacionReservar(Habitaciones *aCargar){
                 aCargar->numero = aux.numero;
                 aCargar->ambientes = aux.ambientes;
                 aCargar->costeNoche = aux.costeNoche;
+                mostrarHabitacion(aux);
             }
         }
     }
