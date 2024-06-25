@@ -108,15 +108,13 @@ void borrarCliente(int pos){
         while(!feof(archi)){
             if(!feof(archi)){
                 fread(&aux,sizeof(Cliente),1,archi);
-                if(i != (pos-1)){
+                if(i != (pos-1)&& i<total){
                     strcpy(arr[j].nombre,aux.nombre);
                     strcpy(arr[j].apellido,aux.apellido);
                     arr[j].dni=aux.dni;
                     arr[j].edad=aux.edad;
                     mostrarCliente(arr[j]);
                     j++;
-                }else{
-                    fread(&aux,sizeof(Cliente),1,archi);
                 }
                 i++;
             }
@@ -219,7 +217,7 @@ void clienteMB(int pos){
 int buscarPorDNI(){
     int dni,pos,i = 0, flag = 0;
     Cliente aux;
-    printf("\nIngrese el dni del cliente\n");
+    printf("\nIngrese el DNI del cliente\n");
     fflush(stdin);
     scanf("%i",&dni);
     FILE *archi=fopen(CLIENTES,"rb");
@@ -251,28 +249,6 @@ void posicionCliente(){
     }
 }
 
-int habitacionPosicion(FILE *archi){
-    Habitaciones matriz[fil][col];
-    int i = 0;
-    int control;
-    for(int j=0;j<fil;j++){
-        for(int k=0;k<col;k++){
-            fread(&matriz[j][k],sizeof(Cliente),1,archi);
-        }
-    }
-    for(int j=0; j<fil;j++){
-        for(int k=0;k<col;k++){
-            mostrarHabitacion(matriz[j][k]);
-        }
-        printf("\n");
-    }
-    printf("\nElegi el numero de la habitacion:\n");
-    fflush(stdin);
-    scanf("%i",&control);
-    control;
-    return control;
-}
-
 void clienteReservar(Cliente *aCargar){
     int posicion=buscarPorDNI();
     FILE *archi= fopen (CLIENTES,"rb");
@@ -288,10 +264,12 @@ void clienteReservar(Cliente *aCargar){
 
 void habitacionReservar(Habitaciones *aCargar){
     int numero;
+    printf("\nElegi el numero de la habitacion:\n");
+    fflush(stdin);
+    scanf("%i",&numero);
     Habitaciones aux;
     FILE *archi= fopen (HABITACIONES,"rb");
     if(archi != NULL){
-        numero = habitacionPosicion(&archi);
         fseek(archi,0,SEEK_SET);
         while(!feof(archi)){
             fread(&aux,sizeof(Habitaciones),1,archi);
@@ -319,32 +297,25 @@ void cargarCliente(Cliente *aux){
     printf("\nIngrese la edad del cliente:\n");
     fflush(stdin);
     scanf("%i",&aux->edad);
-    scanf("%i",&aux->edad);
     printf("\nIngrese el DNI del cliente:\n");
     fflush(stdin);
     scanf("%i",&aux->dni);
-    scanf("%i",&aux->dni);
+
 }
 
 void cargarHabitacion(Habitaciones *aux){
     printf("Ingrese el numero de la habitacion:\n");
     fflush(stdin);
     scanf("%s",&aux->numero);
-    scanf("%s",&aux->numero);
     printf("\nIngrese la cantidad de ambientes que tiene la habitacion:\n");
     fflush(stdin);
-    scanf("%s",&aux->ambientes);
     scanf("%s",&aux->ambientes);
     printf("\nIngrese el coste por noche de la habitacion:\n");
     fflush(stdin);
     scanf("%i",&aux->costeNoche);
-    scanf("%i",&aux->costeNoche);
 }
 
 void cargarReserva(Reservas *aux){
-    clienteReservar(&aux->reservadoPor);
-    habitacionReservar(&aux->habitacionReservada);
-    printf("\nDe cuantos dias es la reserva?: \n");
     clienteReservar(&aux->reservadoPor);
     habitacionReservar(&aux->habitacionReservada);
     printf("\nDe cuantos dias es la reserva?: \n");
@@ -355,24 +326,12 @@ void cargarReserva(Reservas *aux){
     printf("\nDia de entrada: \n");
     fflush(stdin);
     scanf("%i",&aux->checkIn[0]);
-    printf("\nMes de entrada: \n");
-    scanf("%i",aux->checkIn[0]);
-    printf("\nMes de entrada: \n");
-    fflush(stdin);
-    scanf("%i",&aux->checkIn[1]);
-    printf("\nDia de salida: \n");
-    scanf("%i",aux->checkIn[1]);
-    printf("\nDia de salida: \n");
-    fflush(stdin);
-    scanf("%i",&aux->checkOut[0]);
     printf("\nMes de salida: \n");
+    fflush(stdin);
     scanf("%i",aux->checkOut[0]);
     printf("\nMes de salida: \n");
     fflush(stdin);
     scanf("%i",&aux->checkOut[1]);
-    aux->costeTotal = aux->cantDias * aux->habitacionReservada.costeNoche;
-    printf("\nEl coste total seria de: %i \n",aux->costeTotal);
-    scanf("%i",aux->checkOut[1]);
     aux->costeTotal= aux->cantDias * aux->habitacionReservada.costeNoche;
     printf("\nEl coste total seria de: %i \n",aux->costeTotal);
 }
@@ -700,14 +659,16 @@ void clienteMenu(){
 
 void reservaMenu(){
     int selector;
-    system("cls");
-    printf("\nSelecciona una opcion:\n");
-    printf("\n1. Listar reservas\n");
-    printf("\n2. Buscar reservaa\n");
-    printf("\n3. Agregar reserva\n");
-    printf("\n4. Crear archivo de reservas\n");
-    printf("\n0. Volver\n");
     do{
+        system("cls");
+        printf("\nSelecciona una opcion:\n");
+        printf("\n1. Listar reservas\n");
+        printf("\n2. Buscar reservaa\n");
+        printf("\n3. Agregar reserva\n");
+        printf("\n4. Crear archivo de reservas\n");
+        printf("\n0. Volver\n");
+        fflush(stdin);
+        scanf("%i",&selector);
         switch(selector){
             case 1:
                 break;
