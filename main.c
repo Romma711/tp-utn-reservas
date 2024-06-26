@@ -42,8 +42,9 @@ typedef struct{
 
 ///TO DO Hacer la funcionalidad completa del menu
 
-///REGION Cuenta de registros
+///REGION ZONA DE MANEJO DE CLIENTES
 
+//RECUPERA LA CANTIDAD DE REGISTROS DENTRO DEL ARCHIVO
 int cantRegistrosCliente(){
     FILE *archi = fopen(CLIENTES,"rb");
     int resultado;
@@ -53,20 +54,6 @@ int cantRegistrosCliente(){
     }
     return resultado;
 }
-
-int cantRegistrosReserva(){
-    FILE *archi = fopen(RESERVAS,"rb");
-    int resultado;
-    if(archi != NULL){
-        fseek(archi,0,SEEK_END);
-        resultado = ftell(archi)/sizeof(Reservas);
-    }
-    return resultado;
-}
-
-///REGION Modificacion y eliminacion de registros
-
-///ENDREGION
 
 void modificarCliente(Cliente *aux){
     int selector;
@@ -105,7 +92,7 @@ void borrarCliente(int pos){
     int total=cantRegistrosCliente();
     Cliente *arr;
     Cliente aux;
-    arr = (Cliente*) malloc(sizeof(Cliente)*total);
+    arr = (Cliente*) malloc(sizeof(Cliente)*(total-1));
     int i = 0;
     int j=0;
     FILE *archi  = fopen(CLIENTES,"rb");
@@ -126,7 +113,7 @@ void borrarCliente(int pos){
     FILE *archi2=fopen(CLIENTES,"wb");
     j = 0;
     if(archi2 != NULL){
-        while(j<(i-1)){
+        while(j<(i-2)){
             fwrite(&arr[j],sizeof(Cliente),1,archi2);
             j++;
         }
@@ -134,59 +121,11 @@ void borrarCliente(int pos){
     fclose(archi);
 }
 
-void modificarReserva(Reservas *aux){
-    int selector;
-    int intAux;
-    printf("\nQue desea modificar?\n");
-    printf("\n1. Cliente\n");
-    printf("\n2. Habitacion\n");
-    printf("\n3. CheckIn\n");
-    printf("\n4. CheckOut\n");
-    printf("\n0. Volver\n");
-    switch(selector){
-        case 1:
-            printf("\nCliente: ");
-            fflush(stdin);
-            scanf("%i",intAux);
-            break;
-        case 2:
-            printf("\nHabitacion: ");
-            fflush(stdin);
-            scanf("%i",intAux);
-            break;
-        case 3:
-            printf("\nDia: ");
-            fflush(stdin);
-            scanf("%i",&aux->checkIn[0]);
-            printf("\nMes: ");
-            fflush(stdin);
-            scanf("%i",&aux->checkIn[1]);
-            break;
-        case 4:
-            printf("\nDia: ");
-            fflush(stdin);
-            scanf("%i",&aux->checkOut[0]);
-            printf("\nMes: ");
-            fflush(stdin);
-            scanf("%i",&aux->checkOut[1]);
-            break;
-        default:
-            break;
-    }
-}
-
-///REGION Modificacion y eliminacion de registros
-
-///ENDREGION
-
-///REGION Posicion en el archivo
-
 void recuperarCliente(int pos){
     Cliente aux;
-    printf("[%i]",pos);
     FILE *archi=fopen(CLIENTES,"r+b");
     if(archi != NULL){
-        fseek(archi,sizeof(Cliente)*(pos-1),SEEK_CUR);
+        fseek(archi,sizeof(Cliente)*(pos-1),SEEK_SET);
         fread(&aux,sizeof(Cliente),1,archi);
         mostrarCliente(aux);
         modificarCliente(&aux);
@@ -195,8 +134,9 @@ void recuperarCliente(int pos){
     }
     fclose(archi);
 }
-
+//MENU PARA MODIFICAR O BORRAR CLIENTE
 void clienteMB(int pos){
+    printf("[%i]",pos);
     printf("\nQue desea hacer?\n");
     printf("\n1. Modificar\n");
     printf("\n2. Eliminar\n");
@@ -215,7 +155,7 @@ void clienteMB(int pos){
             break;
     }
 }
-
+//RECUPERA LA POSICION DEL CLIENTE POR DNI
 int buscarPorDNI(){
     int dni,pos,i = 0, flag = 0;
     Cliente aux;
@@ -224,12 +164,13 @@ int buscarPorDNI(){
     scanf("%i",&dni);
     FILE *archi=fopen(CLIENTES,"rb");
     if(archi != NULL){
-        while(!feof(archi)){
-            fread(&aux,sizeof(Cliente),1,archi);
+        while(fread(&aux,sizeof(Cliente),1,archi)==1){
+            //fread(&aux,sizeof(Cliente),1,archi);
             if(aux.dni==dni){
                 pos=i;
                 flag=1;
                 mostrarCliente(aux);
+                printf("\n");
                 system("pause");
             }
             i++;
@@ -246,14 +187,329 @@ int buscarPorDNI(){
 }
 
 void posicionCliente(){
-    int pos = buscarPorDNI();
-    pos = pos + 1;
+    int pos = buscarPorDNI() +1;
     if(pos > 0){
         clienteMB(pos);
     }else{
         printf("\nNo se encontro al cliente\n");
     }
 }
+
+int dniDuplicado(int dni) {  ///---------Verificacion del DNI----------
+    Cliente aux;
+    FILE *archi = fopen(CLIENTES, "rb");
+    if (archi != NULL) {
+        while (fread(&aux, sizeof(Cliente), 1, archi)) {
+            if (aux.dni == dni) {
+                fclose(archi);
+                return 1; // DNI duplicado
+            }
+        }
+        fclose(archi);
+    }
+    return 0;
+}
+
+int cargarCliente(Cliente *aux){
+    int flag=0;
+    printf("\nIngrese el nombre del cliente:\n");
+    fflush(stdin);
+    scanf("%s",&aux->nombre);
+    printf("\nIngrese el apellido del cliente:\n");
+    fflush(stdin);
+    scanf("%s",&aux->apellido);
+    printf("\nIngrese la edad del cliente:\n");
+    fflush(stdin);
+    scanf("%i",&aux->edad);
+    printf("\nIngrese el DNI del cliente:\n");
+    fflush(stdin);
+    scanf("%i",&aux->dni);
+    if (dniDuplicado(aux->dni)) {
+        printf("\n[El cliente ya se encuentra registrado.]\n");
+        system("pause");
+        flag=1;
+    }
+    return flag;
+}
+
+void crearArchivoCliente(){
+    FILE *archi = fopen(CLIENTES,"wb");
+    if(archi == NULL){
+        printf("\nSe creo el archivo\n");
+        fclose(archi);
+    }else{
+        printf("\nEl archivo ya esta creado\n");
+        fclose(archi);
+    }
+    system("pause");
+}
+
+///ENDREGION ZONA DE MANEJO DE CLIENTES
+
+///REGION ZONA DE MANEJO DE RESERVAS
+
+
+int cantRegistrosReserva(){
+    FILE *archi = fopen(RESERVAS,"rb");
+    int resultado;
+    if(archi != NULL){
+        fseek(archi,0,SEEK_END);
+        resultado = ftell(archi)/sizeof(Reservas);
+    }
+    return resultado;
+}
+
+void cambiarHabitacion(Habitaciones *aux, int pos){
+    printf("[%i]]]]]",pos);
+    FILE *archi = fopen(HABITACIONES,"rb");
+    if(archi != NULL){
+        fseek(archi,sizeof(Habitaciones)*(pos),SEEK_SET);
+        fread(aux,sizeof(Habitaciones),1,archi);
+    }
+    fclose(archi);
+}
+
+void modificarReserva(Reservas *aux){
+    int selector;
+    int intAux;
+    printf("\nQue desea modificar?\n");
+    printf("\n1. Habitacion\n");
+    printf("\n2. CheckIn\n");
+    printf("\n3. CheckOut\n");
+    printf("\n0. Volver\n");
+    fflush(stdin);
+    scanf("%i",&selector);
+    switch(selector){
+        case 1:
+            intAux=buscarHabitacion();
+            cambiarHabitacion(&aux->habitacionReservada,intAux);
+            break;
+        case 2:
+            printf("\nDia: ");
+            fflush(stdin);
+            scanf("%i",&aux->checkIn[0]);
+            printf("\nMes: ");
+            fflush(stdin);
+            scanf("%i",&aux->checkIn[1]);
+            break;
+        case 3:
+            printf("\nDia: ");
+            fflush(stdin);
+            scanf("%i",&aux->checkOut[0]);
+            printf("\nMes: ");
+            fflush(stdin);
+            scanf("%i",&aux->checkOut[1]);
+            break;
+        default:
+            break;
+    }
+}
+
+void borrarReserva(int pos){
+    int total=cantRegistrosReserva();
+    Reservas *arr;
+    Reservas aux;
+    arr = (Reservas*) malloc(sizeof(Reservas)*(total-1));
+    int i = 0;
+    int j=0;
+    FILE *archi  = fopen(RESERVAS,"rb");
+    if(archi != NULL){
+        while(!feof(archi)){
+            if(i != (pos-1) && i<total){
+            fread(&arr[j],sizeof(Reservas),1,archi);
+                j++;
+            }else{
+                fread(&aux,sizeof(Reservas),1,archi);
+            }
+            i++;
+        }
+    }
+    fclose(archi);
+    FILE *archi2=fopen(RESERVAS,"wb");
+    j = 0;
+    if(archi2 != NULL){
+        while(j<(i-2)){
+            fwrite(&arr[j],sizeof(Reservas),1,archi2);
+            j++;
+        }
+    }
+    fclose(archi);
+}
+
+void recuperarReserva(int pos){
+    Reservas aux;
+    printf("[%i]",pos);
+    FILE *archi=fopen(RESERVAS,"r+b");
+    if(archi != NULL){
+        fseek(archi,sizeof(Reservas)*(pos-1),SEEK_CUR);
+        fread(&aux,sizeof(Reservas),1,archi);
+        mostrarReserva(aux);
+        modificarReserva(&aux);
+        fseek(archi,sizeof(Reservas)*(pos-1),SEEK_SET);
+        fwrite(&aux,sizeof(Reservas),1,archi);
+    }
+    fclose(archi);
+}
+
+void reservaMB(int pos){
+    printf("\nQue desea hacer?\n");
+    printf("\n1. Modificar\n");
+    printf("\n2. Eliminar\n");
+    printf("\n0. Volver\n");
+    int selector;
+    fflush(stdin);
+    scanf("%i",&selector);
+    switch(selector){
+        case 1:
+            recuperarReserva(pos);
+            break;
+        case 2:
+            borrarReserva(pos);
+            break;
+        default:
+            break;
+    }
+}
+
+void clienteReservar(Cliente *aCargar){
+    int posicion=buscarPorDNI();
+    printf("[%i]",posicion);
+    FILE *archi= fopen (CLIENTES,"rb");
+    if(archi != NULL){
+        if(posicion>=0){
+            fseek(archi,0,SEEK_SET);
+            fseek(archi,sizeof(Cliente)*(posicion),SEEK_CUR);
+            fread(aCargar,sizeof(Cliente),1,archi);
+        }
+    }
+    fclose(archi);
+}
+
+void habitacionReservar(Habitaciones *aCargar){
+    int numero;
+    printf("\nElegi el numero de la habitacion:\n");
+    fflush(stdin);
+    scanf("%i",&numero);
+    Habitaciones aux;
+    FILE *archi= fopen (HABITACIONES,"rb");
+    if(archi != NULL){
+        fseek(archi,0,SEEK_SET);
+        while(fread(&aux,sizeof(Habitaciones),1,archi)==1){
+            //fread(&aux,sizeof(Habitaciones),1,archi);
+            if(aux.numero == numero){
+                aCargar->numero = aux.numero;
+                aCargar->ambientes = aux.ambientes;
+                aCargar->costeNoche = aux.costeNoche;
+                mostrarHabitacion(aux);
+            }
+        }
+    }
+    fclose(archi);
+}
+
+int fechasSuperpuestas(Reservas *nuevaReserva) {
+    Reservas aux;
+    printf("DENTRO DE SUPERPOSICION");
+    mostrarReserva(nuevaReserva);
+    FILE *archi = fopen(RESERVAS, "rb");
+    if (archi != NULL) {
+        while (fread(&aux, sizeof(Reservas), 1, archi)) {
+            if (aux.habitacionReservada.numero == nuevaReserva->habitacionReservada.numero) {
+                if(nuevaReserva->checkIn[1]==aux.checkOut[1]){
+                        if(nuevaReserva->checkIn[0]>=aux.checkIn[0] && nuevaReserva->checkIn[0]<=aux.checkOut[0]){
+
+        //        if (!(nuevaReserva->checkOut[1] < aux.checkIn[1] ||(nuevaReserva->checkOut[1] == aux.checkIn[1] && nuevaReserva->checkOut[0] < aux.checkIn[0]) || nuevaReserva->checkIn[1] > aux.checkOut[1] || (nuevaReserva->checkIn[1] == aux.checkOut[1] && nuevaReserva->checkIn[0] > aux.checkOut[0]))) {
+                        fclose(archi);
+                        return 1; // Fechas superpuestas
+                    }
+                }else{
+                    if(nuevaReserva->checkIn[0]<=aux.checkOut[0]){
+                        fclose(archi);
+                        return 1; // Fechas superpuestas
+                    }
+                }
+            }
+        }
+        fclose(archi);
+    }
+    return 0; // No hay superposición de fechas
+}
+
+int verificarCliente(Cliente aVerificar){
+    Reservas aux;
+    FILE *archi=fopen(RESERVAS,"rb");
+    if(archi != NULL){
+        while(fread(&aux,sizeof(Reservas),1,archi)){
+            if(aux.reservadoPor.dni == aVerificar.dni){
+                fclose(archi);
+                return 1; ///Devuelve que el cliente ya hizo una reserva
+            }
+        }
+    }
+    fclose(archi);
+    return 0;///El cliente no hizo reservas
+}
+
+void cargarReserva(Reservas *aux){
+    int flag=0; ///verifica que las fechas sean correctas
+    int flag2=0; ///verifica que la fecha de la reserve de una misma habitacion no se superponga con otra de la misma habitacion
+    clienteReservar(&aux->reservadoPor);
+    int verificado = verificarCliente(aux->reservadoPor);
+    if(verificado == 0){
+    mostrarMatrizHabitaciones();
+    habitacionReservar(&aux->habitacionReservada);
+    printf("\nDe cuantos dias es la reserva?: \n");
+    fflush(stdin);
+    scanf("%i",&aux->cantDias);
+    fflush(stdin);
+    do{
+        if(flag==1){
+            printf("\[Las fechas no son validas, intente de nuevo]\n");
+            system("pause");
+        }
+        if(flag2==1){
+            printf("\nError: las fechas de la reserva se superponen con una existente. Intente de nuevo.\n");
+            system("pause");
+        }
+        printf("\nDia de entrada: \n");
+        scanf("%i",&aux->checkIn[0]);
+        printf("\nMes de entrada: \n");
+        fflush(stdin);
+        scanf("%i",&aux->checkIn[1]);
+        printf("\nDia de salida: \n");
+        fflush(stdin);
+        scanf("%i",&aux->checkOut[0]);
+        printf("\nMes de salida: \n");
+        fflush(stdin);
+        scanf("%i",&aux->checkOut[1]);
+        flag=1;
+        flag2=fechasSuperpuestas(aux);
+        printf("[%i]",flag2);
+    }while((aux->checkIn[0]<0 && aux->checkIn[1]<0 && aux->checkIn[0]>31 && aux->checkIn[1]>13 && aux->checkOut[0]<0 && aux->checkOut[1]<0 && aux->checkOut[0]>31 && aux->checkOut[1]>13) || flag2==1);
+    aux->costeTotal = aux->cantDias * aux->habitacionReservada.costeNoche;
+    printf("\nEl coste total seria de: %i \n",aux->costeTotal);
+    system("pause");
+    }else{
+        printf("\n[El cliente ya tiene una reserva hecha]\n");
+        system("pause");
+    }
+}
+
+void crearArchivoReservas(){
+    FILE *archi = fopen(RESERVAS,"wb");
+    if(archi == NULL){
+        printf("\nSe creo el archivo\n");
+        fclose(archi);
+    }else{
+        printf("\nEl archivo ya esta creado\n");
+        fclose(archi);
+    }
+    system("pause");
+}
+
+///ENDREGION ZONA DE MANEJO DE RESERVAS
+
+///REGION ZONA DE MANEJO DE HABITACIONES
 
 void modificarHabitacion(int pos){
 
@@ -329,61 +585,6 @@ void posicionHabitacion(){
     }
 }
 
-void clienteReservar(Cliente *aCargar){
-    int posicion=buscarPorDNI();
-    FILE *archi= fopen (CLIENTES,"rb");
-    if(archi != NULL){
-        if(posicion>=0){
-            fseek(archi,0,SEEK_SET);
-            fseek(archi,sizeof(Cliente)*(posicion-1),SEEK_CUR);
-            fread(aCargar,sizeof(Cliente),1,archi);
-        }
-    }
-    fclose(archi);
-}
-
-void habitacionReservar(Habitaciones *aCargar){
-    int numero;
-    printf("\nElegi el numero de la habitacion:\n");
-    fflush(stdin);
-    scanf("%i",&numero);
-    Habitaciones aux;
-    FILE *archi= fopen (HABITACIONES,"rb");
-    if(archi != NULL){
-        fseek(archi,0,SEEK_SET);
-        while(!feof(archi)){
-            fread(&aux,sizeof(Habitaciones),1,archi);
-            if(aux.numero == numero){
-                aCargar->numero = aux.numero;
-                aCargar->ambientes = aux.ambientes;
-                aCargar->costeNoche = aux.costeNoche;
-                mostrarHabitacion(aux);
-            }
-        }
-    }
-    fclose(archi);
-}
-
-
-///ENDREGION Posicion en el archivo
-
-///REGION Cargar registros
-
-void cargarCliente(Cliente *aux){
-    printf("\nIngrese el nombre del cliente:\n");
-    fflush(stdin);
-    scanf("%s",&aux->nombre);
-    printf("\nIngrese el apellido del cliente:\n");
-    fflush(stdin);
-    scanf("%s",&aux->apellido);
-    printf("\nIngrese la edad del cliente:\n");
-    fflush(stdin);
-    scanf("%i",&aux->edad);
-    printf("\nIngrese el DNI del cliente:\n");
-    fflush(stdin);
-    scanf("%i",&aux->dni);
-}
-
 void cargarHabitacion(Habitaciones *aux){
     printf("\nIngrese el numero de la habitacion:\n");
     fflush(stdin);
@@ -394,48 +595,6 @@ void cargarHabitacion(Habitaciones *aux){
     printf("\nIngrese el coste por noche de la habitacion:\n");
     fflush(stdin);
     scanf("%i",&aux->costeNoche);
-}
-
-void cargarReserva(Reservas *aux){
-    clienteReservar(&aux->reservadoPor);
-    mostrarMatrizHabitaciones();
-    habitacionReservar(&aux->habitacionReservada);
-    printf("\nDe cuantos dias es la reserva?: \n");
-    fflush(stdin);
-    scanf("%i",&aux->cantDias);
-    printf("\nDia de entrada: \n");
-    fflush(stdin);
-    scanf("%i",&aux->checkIn[0]);
-    printf("\nMes de entrada: \n");
-    fflush(stdin);
-    scanf("%i",&aux->checkIn[1]);
-    printf("\nDia de salida: \n");
-    fflush(stdin);
-    scanf("%i",&aux->checkOut[0]);
-    printf("\nMes de salida: \n");
-    fflush(stdin);
-    scanf("%i",&aux->checkOut[1]);
-    aux->costeTotal = aux->cantDias * aux->habitacionReservada.costeNoche;
-    printf("\nEl coste total seria de: %i \n",aux->costeTotal);
-    system("pause");
-}
-
-
-
-///ENDREGION Cargar registros
-
-///REGION Crear archivos
-
-void crearArchivoCliente(){
-    FILE *archi = fopen(CLIENTES,"wb");
-    if(archi == NULL){
-        printf("\nSe creo el archivo\n");
-        fclose(archi);
-    }else{
-        printf("\nEl archivo ya esta creado\n");
-        fclose(archi);
-    }
-    system("pause");
 }
 
 void crearArchivoHabitaciones(){
@@ -450,46 +609,20 @@ void crearArchivoHabitaciones(){
     system("pause");
 }
 
-void crearArchivoReservas(){
-    FILE *archi = fopen(RESERVAS,"wb");
-    if(archi == NULL){
-        printf("\nSe creo el archivo\n");
-        fclose(archi);
-    }else{
-        printf("\nEl archivo ya esta creado\n");
-        fclose(archi);
-    }
-    system("pause");
-}
-
-///ENDREGION Crear archivos
+///ENDREGION ZONA DE MANEJO DE HABITACION
 
 ///REGION Cargar archivos
 
-//TO DO crear validaciones para las diferentes funciones, revisando el dato a cargar y los diferentes registros cargados coincidan
-
-int validarFechas(Reservas aValidar,FILE *archi){
-    Reservas aux;
-    int flag=0;
-    while(!feof(archi)){
-        fread(&aux,sizeof(Cliente),1,archi);
-        if(aValidar.habitacionReservada.numero==aux.habitacionReservada.numero){
-            if(aValidar.checkIn[0]<=aux.checkOut[0] && aValidar.checkOut<aux.checkOut && aValidar.checkIn[1]==aux.checkIn[1]){
-                flag=1;
-            }
-        }
-    }
-    return flag;
-}
-
 void cargarArchivoClientes(){
     Cliente aux;
-    cargarCliente(&aux);
-    FILE *archi=fopen(CLIENTES,"ab");
-    if(archi != NULL){
-       fwrite(&aux,sizeof(Cliente),1,archi);
+    int flag = cargarCliente(&aux);
+    if(flag==0){
+        FILE *archi=fopen(CLIENTES,"ab");
+        if(archi != NULL){
+           fwrite(&aux,sizeof(Cliente),1,archi);
+        }
+        fclose(archi);
     }
-    fclose(archi);
 }
 
 void cargarArchivoHabitaciones(){
@@ -558,8 +691,9 @@ void mostrarRecursivoCliente(Cliente arr[], int i, int val){
 
 void mostrarRecursivoReserva(Reservas arr[], int i, int val){
     if(i<val){
+        printf("\n\n[%i]...................................",i+1);
         mostrarReserva(arr[i]);
-        mostrarRecursivoReserva(arr,i+1,val-1);
+        mostrarRecursivoReserva(arr,i+1,val);
     }
 }
 
@@ -588,14 +722,79 @@ void mostrarMatrizHabitaciones(){
         }
         fclose(archi);
     }
+    ordenarPilaPrecio(matriz);
+//    for(int i = 0; i < fil; i++){
+//        printf("\nPlanta %i:\n", i);
+//        for(int j = 0; j < col; j++){
+//            printf("| %i |", matriz[i][j]);
+//        }
+//    }
 
-    for(int i = 0; i < fil; i++){
-        printf("\nPlanta %i:\n", i);
-        for(int j = 0; j < col; j++){
-            printf("| %i |", matriz[i][j]);
+}
+
+void ordenarPilaPrecio(int matriz[fil][col]) {                                                                     ///------------PILAAAAA::..............
+int numHabitacionesPila = fil * col;
+    int habitacionesPila[numHabitacionesPila];
+    int preciosHabitaciones[numHabitacionesPila];
+    Habitaciones hab;
+    int posPrecio = 0;
+    int pos = 0;
+    Pila pilita;
+    Pila aux;
+    inicpila(&pilita);
+    inicpila(&aux);
+
+
+    for (int i = 0; i < fil; i++) {
+        for (int j = 0; j < col; j++) {
+            habitacionesPila[pos] = matriz[i][j];
+            pos++;
         }
     }
 
+
+    FILE *archi = fopen(HABITACIONES, "rb");
+    if (archi != NULL) {
+        while (fread(&hab, sizeof(Habitaciones), 1, archi) == 1) {
+            preciosHabitaciones[posPrecio] = hab.costeNoche;
+            posPrecio++;
+        }
+        fclose(archi);
+    } else {
+        printf("Error al abrir el archivo %s.\n", HABITACIONES);
+        return;
+    }
+
+
+    for (int i = 0; i < numHabitacionesPila - 1; i++) {
+        int max_idx = i;
+        for (int j = i + 1; j < numHabitacionesPila; j++) {
+            if (preciosHabitaciones[j] > preciosHabitaciones[max_idx]) {
+                max_idx = j;
+            }
+        }
+
+
+        if (max_idx != i) {
+            int tempPrecio = preciosHabitaciones[max_idx];
+            preciosHabitaciones[max_idx] = preciosHabitaciones[i];
+            preciosHabitaciones[i] = tempPrecio;
+
+            int tempHabitacion = habitacionesPila[max_idx];
+            habitacionesPila[max_idx] = habitacionesPila[i];
+            habitacionesPila[i] = tempHabitacion;
+        }
+    }
+
+
+    printf("\nHabitaciones ordenadas por precio (de menor a mayor):\n");
+    for (int z = 0; z < numHabitacionesPila; z++) {
+        apilar(&aux, habitacionesPila[z]);
+    }
+    while(!pilavacia(&aux)){
+        apilar(&pilita, desapilar(&aux));
+    }
+    mostrar(&pilita);
 }
 
 void copiarReservasEnArreglo(int cant, Reservas **arr){
@@ -654,25 +853,6 @@ void abrirArchivoHabitacion(){
     fclose(archi);
 }
 
-void abrirArchivoReservas(){
-    system("cls");
-    int i = 0;
-    int val =0;
-    Reservas aux[50];
-    FILE *archi = fopen(RESERVAS,"rb");
-    if(archi != NULL){
-        while(!feof(archi)){
-            if(!feof(archi)){
-                fread(&aux[val],sizeof(Reservas),1,archi);
-                val++;
-                printf("%i",val);
-
-            }
-        }
-        mostrarRecursivoReserva(aux,i,val-1);
-    }
-    fclose(archi);
-}
 void listarReservas() {
     system("cls");
     int i = 0;
@@ -691,10 +871,9 @@ void listarReservas() {
         printf("No se pudo abrir el archivo de reservas.\n");
     }
     fclose(archi);
-    system("pause");
 }
 int buscarReservaPorDNI() {
-    int dni, pos = -1, i = 0;
+    int dni, pos = 0, i = 0;
     Reservas aux;
 
     printf("\nIngrese el DNI del cliente que realizó la reserva:\n");
@@ -716,12 +895,13 @@ int buscarReservaPorDNI() {
         printf("\nNo se pudo abrir el archivo de reservas.\n");
     }
 
-    return pos;
+    return pos+1;
 }
 
 void posicionReserva() {
     int pos = buscarReservaPorDNI();
-    if (pos >= 0) {
+    if (pos > 0) {
+        reservaMB(pos);
     } else {
         printf("\nNo se encontró la reserva.\n");
     }
@@ -731,8 +911,6 @@ void posicionReserva() {
 ///ENDREGION Mostrar contenido del archivo
 
 ///REGION MENU
-
-//TO DO Crear un menu utilizable
 
 void mainMenu(){
     int selector;
@@ -806,7 +984,9 @@ void clienteMenu(){
 }
 
 void reservaMenu(){
-     int selector;
+    int selector;
+    char control;
+    int posicion;
     do {
         system("cls");
         printf("\nSelecciona una opción:\n");
@@ -820,6 +1000,16 @@ void reservaMenu(){
         switch (selector) {
             case 1:
                 listarReservas();
+                printf("\n");
+                printf("\nDesea modificar alguna reserva? s/n :");
+                fflush(stdin);
+                scanf("%c",&control);
+                if(control=='s'){
+                    printf("\nElija una reserva: ");
+                    fflush(stdin);
+                    scanf("%i",&posicion);
+                    reservaMB(posicion);
+                }
                 break;
             case 2:
                 posicionReserva();
@@ -852,6 +1042,7 @@ void habitacionesMenu(){
             case 1:
                 abrirArchivoHabitacion();
                 mostrarMatrizHabitaciones();
+
                 printf("\n");
                 system("pause");
                 break;
