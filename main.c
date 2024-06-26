@@ -261,6 +261,9 @@ int cantRegistrosReserva(){
 
 void cambiarHabitacion(Habitaciones *aux, int pos){
     printf("[%i]]]]]",pos);
+    if(pos == 9){
+        pos--;
+    }
     FILE *archi = fopen(HABITACIONES,"rb");
     if(archi != NULL){
         fseek(archi,sizeof(Habitaciones)*(pos),SEEK_SET);
@@ -341,11 +344,11 @@ void recuperarReserva(int pos){
     printf("[%i]",pos);
     FILE *archi=fopen(RESERVAS,"r+b");
     if(archi != NULL){
-        fseek(archi,sizeof(Reservas)*(pos-1),SEEK_CUR);
+        fseek(archi,sizeof(Reservas)*(pos),SEEK_CUR);
         fread(&aux,sizeof(Reservas),1,archi);
         mostrarReserva(aux);
         modificarReserva(&aux);
-        fseek(archi,sizeof(Reservas)*(pos-1),SEEK_SET);
+        fseek(archi,sizeof(Reservas)*(pos),SEEK_SET);
         fwrite(&aux,sizeof(Reservas),1,archi);
     }
     fclose(archi);
@@ -369,6 +372,42 @@ void reservaMB(int pos){
         default:
             break;
     }
+}
+
+int buscarReservaPorDNI() {
+    int dni, pos = 0, i = 0;
+    Reservas aux;
+
+    printf("\nIngrese el DNI del cliente que realizó la reserva:\n");
+    fflush(stdin);
+    scanf("%i", &dni);
+
+    FILE *archi = fopen(RESERVAS, "rb");
+    if (archi != NULL) {
+        while (fread(&aux, sizeof(Reservas), 1, archi)) {
+            if (aux.reservadoPor.dni == dni) {
+                pos = i;
+                mostrarReserva(aux);
+                break;
+            }
+            i++;
+        }
+        fclose(archi);
+    } else {
+        printf("\nNo se pudo abrir el archivo de reservas.\n");
+    }
+
+    return pos;
+}
+
+void posicionReserva() {
+    int pos = buscarReservaPorDNI();
+    if (pos >= 0) {
+        reservaMB(pos);
+    } else {
+        printf("\nNo se encontró la reserva.\n");
+    }
+    system("pause");
 }
 
 void clienteReservar(Cliente *aCargar){
@@ -872,41 +911,6 @@ void listarReservas() {
     }
     fclose(archi);
 }
-int buscarReservaPorDNI() {
-    int dni, pos = 0, i = 0;
-    Reservas aux;
-
-    printf("\nIngrese el DNI del cliente que realizó la reserva:\n");
-    fflush(stdin);
-    scanf("%i", &dni);
-
-    FILE *archi = fopen(RESERVAS, "rb");
-    if (archi != NULL) {
-        while (fread(&aux, sizeof(Reservas), 1, archi)) {
-            if (aux.reservadoPor.dni == dni) {
-                pos = i;
-                mostrarReserva(aux);
-                break;
-            }
-            i++;
-        }
-        fclose(archi);
-    } else {
-        printf("\nNo se pudo abrir el archivo de reservas.\n");
-    }
-
-    return pos+1;
-}
-
-void posicionReserva() {
-    int pos = buscarReservaPorDNI();
-    if (pos > 0) {
-        reservaMB(pos);
-    } else {
-        printf("\nNo se encontró la reserva.\n");
-    }
-    system("pause");
-}
 
 ///ENDREGION Mostrar contenido del archivo
 
@@ -1008,7 +1012,7 @@ void reservaMenu(){
                     printf("\nElija una reserva: ");
                     fflush(stdin);
                     scanf("%i",&posicion);
-                    reservaMB(posicion);
+                    reservaMB(posicion-1);
                 }
                 break;
             case 2:
