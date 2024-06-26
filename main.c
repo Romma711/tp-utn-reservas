@@ -183,13 +183,14 @@ void modificarReserva(Reservas *aux){
 
 void recuperarCliente(int pos){
     Cliente aux;
+    printf("[%i]",pos);
     FILE *archi=fopen(CLIENTES,"r+b");
     if(archi != NULL){
-        fseek(archi,sizeof(Cliente)*pos,SEEK_CUR);
+        fseek(archi,sizeof(Cliente)*(pos-1),SEEK_CUR);
         fread(&aux,sizeof(Cliente),1,archi);
         mostrarCliente(aux);
         modificarCliente(&aux);
-        fseek(archi,sizeof(Cliente)*pos,SEEK_SET);
+        fseek(archi,sizeof(Cliente)*(pos-1),SEEK_SET);
         fwrite(&aux,sizeof(Cliente),1,archi);
     }
     fclose(archi);
@@ -246,7 +247,8 @@ int buscarPorDNI(){
 
 void posicionCliente(){
     int pos = buscarPorDNI();
-    if(pos >= 0){
+    pos = pos + 1;
+    if(pos > 0){
         clienteMB(pos);
     }else{
         printf("\nNo se encontro al cliente\n");
