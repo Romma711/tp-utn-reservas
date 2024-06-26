@@ -32,3 +32,16 @@
 1719341435 source:c:\users\eze\desktop\tp progra\tp-utn-reservas\pila.c
 	"pila.h"
 
+1719363111 source:c:\users\pc\desktop\tp-utn-reservas\pila.c
+	"pila.h"
+
+1719363111 c:\users\pc\desktop\tp-utn-reservas\pila.h
+	<stdio.h>
+	<malloc.h>
+
+1719364555 source:c:\users\pc\desktop\tp-utn-reservas\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"pila.h"
+
