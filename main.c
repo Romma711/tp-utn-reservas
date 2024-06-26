@@ -671,6 +671,60 @@ void abrirArchivoReservas(){
     }
     fclose(archi);
 }
+void listarReservas() {
+    system("cls");
+    int i = 0;
+    int val = 0;
+    Reservas aux[50];
+    FILE *archi = fopen(RESERVAS, "rb");
+    if (archi != NULL) {
+        while (!feof(archi)) {
+            if (!feof(archi)) {
+                fread(&aux[val], sizeof(Reservas), 1, archi);
+                val++;
+            }
+        }
+        mostrarRecursivoReserva(aux, i, val - 1);
+    } else {
+        printf("No se pudo abrir el archivo de reservas.\n");
+    }
+    fclose(archi);
+    system("pause");
+}
+int buscarReservaPorDNI() {
+    int dni, pos = -1, i = 0;
+    Reservas aux;
+
+    printf("\nIngrese el DNI del cliente que realizó la reserva:\n");
+    fflush(stdin);
+    scanf("%i", &dni);
+
+    FILE *archi = fopen(RESERVAS, "rb");
+    if (archi != NULL) {
+        while (fread(&aux, sizeof(Reservas), 1, archi)) {
+            if (aux.reservadoPor.dni == dni) {
+                pos = i;
+                mostrarReserva(aux);
+                break;
+            }
+            i++;
+        }
+        fclose(archi);
+    } else {
+        printf("\nNo se pudo abrir el archivo de reservas.\n");
+    }
+
+    return pos;
+}
+
+void posicionReserva() {
+    int pos = buscarReservaPorDNI();
+    if (pos >= 0) {
+    } else {
+        printf("\nNo se encontró la reserva.\n");
+    }
+    system("pause");
+}
 
 ///ENDREGION Mostrar contenido del archivo
 
@@ -750,21 +804,23 @@ void clienteMenu(){
 }
 
 void reservaMenu(){
-    int selector;
-    do{
+     int selector;
+    do {
         system("cls");
-        printf("\nSelecciona una opcion:\n");
+        printf("\nSelecciona una opción:\n");
         printf("\n1. Listar reservas\n");
-        printf("\n2. Buscar reservaa\n");
+        printf("\n2. Buscar reserva\n");
         printf("\n3. Agregar reserva\n");
         printf("\n4. Crear archivo de reservas\n");
         printf("\n0. Volver\n");
         fflush(stdin);
-        scanf("%i",&selector);
-        switch(selector){
+        scanf("%i", &selector);
+        switch (selector) {
             case 1:
+                listarReservas();
                 break;
             case 2:
+                posicionReserva();
                 break;
             case 3:
                 cargarArchivoReservas();
@@ -775,7 +831,7 @@ void reservaMenu(){
             case 0:
                 break;
         }
-    }while(selector != 0);
+    } while (selector != 0);
 }
 
 void habitacionesMenu(){
