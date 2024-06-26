@@ -318,7 +318,7 @@ void borrarReserva(int pos){
     FILE *archi  = fopen(RESERVAS,"rb");
     if(archi != NULL){
         while(!feof(archi)){
-            if(i != (pos-1) && i<total){
+            if(i != (pos) && i<total){
             fread(&arr[j],sizeof(Reservas),1,archi);
                 j++;
             }else{
